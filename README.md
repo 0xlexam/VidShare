@@ -1,1 +1,1 @@
-# VidShare
+VidShare is a video sharing platform, built using Flask, where users can upload, share, and view videos. This project includes setup for configurations, database initialization, and registration of Flask blueprints, setting up the foundation for the VidShare application.
