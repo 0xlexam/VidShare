@@ -3,22 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
 
-load_dotform()
+load_dotenv()
 
-app = Flask(__name__)
+flask_app = Flask(__name__)
 
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+flask_app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+flask_app.config['DATABASE_CONNECTION_URI'] = os.getenv('DATABASE_URI')
+flask_app.config['DISABLE_SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+database = SQLAlchemy(flask_app)
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+class UserAccount(database.Model):
+    user_id = database.Column(database.Integer, primary_key=True)
+    user_name = database.Column(database.String(80), unique=True, nullable=False)
 
-from my_blueprint import my_blueprint
-app.register_blueprint(my_blueprint, url_prefix='/my_blueprint')
+from video_sharing_blueprint import video_sharing_blueprint
+
+flask_app.register_blueprint(video_sharing_blueprint, url_prefix='/video_sharing')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    flask_app.run(debug=True)
