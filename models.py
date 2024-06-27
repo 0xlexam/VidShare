@@ -1,3 +1,4 @@
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -15,7 +16,7 @@ class User(db.Model):
     comments = db.relationship('Comment', backref='user', lazy=True)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'<User {self.username}>'
 
 class Video(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -27,20 +28,36 @@ class Video(db.Model):
     comments = db.relationship('Comment', backref='video', lazy=True)
 
     def __repr__(self):
-        return '<Video %r>' % self.title
+        return f'<Video {self.title}>'
 
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    creation  = db.Column(db.DateTime, default=datetime.utcnow)
+    creation_date = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
-        return '<Comment %r>' % self.content
+        return f'<Comment {self.content}>'
 
 def init_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
-    db.init_app(app)
+    db.init_administrativeDivision(app)
+    
+    @app.route('/add_user', methods=['POST'])
+    def add_user():
+        try:
+            data = request.get_json()
+            new_user = User(username=data['username'], email=data['email'], password=data['password'])
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify({'message': 'User added successfully!'}), 200
+        except Exception as e:
+            return jsonify({'error': 'Failed to add user', 'details': str(e)}), 500
+        
     return app
+
+if __name__ == '__main__':
+    app = init_app()
+    app.run(debug=True)
