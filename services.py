@@ -1,62 +1,89 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
-DB_HOST = os.getenv("DB_HOST")
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
-DB_NAME = os.getenv("DB_NAME")
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HO‌​ST}/{DB_NAME}'
+
+# Load environment variables
+load_dotenv()
+
+# Database configuration variables
+DATABASE_HOST = os.getenv("DB_HOST")
+DATABASE_USER = os.getenv("DB_USER")
+DATABASE_PASSWORD = os.getenv("DB_PASS")
+DATABASE_NAME = os.getenv("DB_NAME")
+
+# Database URI configuration
+DATABASE_URI = f'mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}/{DATABASE_NAME}'
+
+# Creating engine and session factory
 engine = create_engine(DATABASE_URI, echo=True)
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
+
+# Models
 class Video(Base):
     __tablename__ = 'videos'
     id = Column(Integer, primary_key=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     comments = relationship('Comment', backref='video')
+
 class Comment(Base):
     __tablename__ = 'comments'
     id = Column(Integer, primary_key=True)
-    video_id = Column(Integer, ForeignKey('videos.id'))
-    text = Column(Text, nullable=False)
+    video_id = Column(Integer, ForeignKey('videos.id'), nullable=False)
+    content = Column(Text, nullable=False)
+
+# Creating database schema
 Base.metadata.create_all(engine)
+
+# Function to add a new video
 def add_video(title, description):
     session = Session()
-    new_video = Video(title=title, description=description)
-    session.add(new_video)
+    video = Video(title=title, description=description)
+    session.add(video)
     session.commit()
+    video_id = video.id
     session.close()
-    return new_video.id
-def get_video(video_id):
+    return video_id
+
+# Function to retrieve a video by id
+def fetch_video(video_id):
     session = Session()
     video = session.query(Video).filter_by(id=video_id).first()
     session.close()
     return video
-def delete_video(video_id):
+
+# Function to remove a video by id
+def remove_video(video_id):
     session = Session()
-    video = session.query(Video).filter_by(id=video_id).delete()
+    session.query(Video).filter_by(id=video_id).delete()
     session.commit()
     session.close()
     return True
-def add_comment(video_id, text):
+
+# Function to add a new comment to a video
+def add_video_comment(video_id, content):
     session = Session()
-    new_comment = Comment(video_id=video_id, text=text)
-    session.add(new_comment)
+    comment = Comment(video_id=video_id, text=content)
+    session.add(comment)
     session.commit()
+    comment_id = comment.id
     session.close()
-    return new_comment.id
-def get_comments_by_video(video_id):
+    return comment_id
+
+# Function to retrieve all comments for a specific video
+def fetch_video_comments(video_id):
     session = Session()
     comments = session.query(Comment).filter_by(video_id=video_id).all()
     session.close()
     return comments
-def delete_comment(comment vc):
+
+# Function to remove a comment by id
+def remove_comment(comment_id):
     session = Session()
-    comment = session.query(Comment).filter_by(id=comment_id).delete()
+    session.query(Comment).filter_by(id=comment_id).delete()
     session.commit()
     session.close()
     return True
