@@ -1,8 +1,5 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
 
 # Load environment variables
 load_dotenv()
@@ -15,13 +12,15 @@ DATABASE_NAME = os.getenv("DB_NAME")
 
 # Database URI configuration
 DATABASE_URI = f'mysql+pymysql://{DATABASE_USER}:{DATABASE_PASSWORD}@{DATABASE_HOST}/{DATABASE_NAME}'
+```
+```python
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
+from config import DATABASE_URI
 
-# Creating engine and session factory
-engine = create_engine(DATABASE_URI, echo=True)
-Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
-# Models
 class Video(Base):
     __tablename__ = 'videos'
     id = Column(Integer, primary_key=True)
@@ -35,55 +34,76 @@ class Comment(Base):
     video_id = Column(Integer, ForeignKey('videos.id'), nullable=False)
     content = Column(Text, nullable=False)
 
+# Engine and session creation
+engine = create_engine(DATABASE_URI, echo=True)
+Session = sessionmaker(bind=engine)
+
 # Creating database schema
-Base.metadata.create_all(engine)
+def init_db():
+    Base.metadata.create_all(engine)
+```
+```python
+from contextlib import contextmanager
+from models import Session, Video, Comment
 
-# Function to add a new video
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations."""
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
 def add_video(title, description):
-    session = Session()
-    video = Video(title=title, description=description)
-    session.add(video)
-    session.commit()
-    video_id = video.id
-    session.close()
-    return video_id
+    with session_scope() as session:
+        video = Video(title=title, description=description)
+        session.add(video)
+        return video.id
 
-# Function to retrieve a video by id
-def fetch_video(video_id):
-    session = Session()
-    video = session.query(Video).filter_by(id=video_id).first()
-    session.close()
-    return video
+def get_video(video_id):
+    with session_scope() as session:
+        return session.query(Video).filter_by(id=video_id).first()
 
-# Function to remove a video by id
-def remove_video(video_id):
-    session = Session()
-    session.query(Video).filter_by(id=video_id).delete()
-    session.commit()
-    session.close()
-    return True
+def delete_video(video_id):
+    with session_scope() as session:
+        session.query(Video).filter_by(id=video_id).delete()
 
-# Function to add a new comment to a video
-def add_video_comment(video_id, content):
-    session = Session()
-    comment = Comment(video_id=video_id, text=content)
-    session.add(comment)
-    session.commit()
-    comment_id = comment.id
-    session.close()
-    return comment_id
+def add_comment_to_video(video_id, content):
+    with session_scope() as session:
+        comment = Comment(video_id=video_id, content=content)
+        session.add(comment)
+        return comment.id
 
-# Function to retrieve all comments for a specific video
-def fetch_video_comments(video_id):
-    session = Session()
-    comments = session.query(Comment).filter_by(video_id=video_id).all()
-    session.close()
-    return comments
+def get_comments_for_video(video_id):
+    with session_scope() as session:
+        return session.query(Comment).filter_by(video_id=video_id).all()
 
-# Function to remove a comment by id
-def remove_comment(comment_id):
-    session = Session()
-    session.query(Comment).filter_by(id=comment_id).delete()
-    session.commit()
-    session.close()
-    return True
+def delete_comment(comment_id):
+    with session_scope() as session:
+        session.query(Comment).filter_by(id=comment_id).delete()
+```
+```python
+from models import init_db
+from database_operations import add_video, get_video, delete_video, add_comment_to_video, get_comments_for_video, delete_comment
+
+# Initialize Database
+init_db()
+
+# Sample operation
+video_id = add_video('Sample Title', 'A simple description')
+print(f"Added video ID: {video_id}")
+
+# Fetch Video
+video = get_video(video_id)
+print(f"Fetched Video: {video.title}")
+
+# Delete Video
+delete_video(video_id)
+print("Deleted video successfully.")
+
+# And so on for the rest of the operations...
