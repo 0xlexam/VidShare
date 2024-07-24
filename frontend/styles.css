@@ -5,14 +5,15 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #f4f4f4;
+  line-height: 1.6;
 }
 
 header {
   background-color: #333;
   color: #fff;
-  padding: 10px 0;
+  padding: 20px 0;
   text-align: center;
 }
 
@@ -26,6 +27,11 @@ nav ul a {
   color: white;
   padding: 10px 15px;
   display: inline-block;
+  transition: background-color 0.3s ease;
+}
+
+nav ul a:hover {
+  background-color: #575757;
 }
 
 main {
@@ -34,8 +40,9 @@ main {
 
 form {
   background: #fff;
-  padding: 20px;
+  padding: 25px;
   border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 form input[type="text"],
@@ -43,22 +50,23 @@ form input[type="email"],
 form input[type="password"],
 form textarea {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
+  padding: 12px;
+  margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
 
 form input[type="submit"] {
-  background-color: #5cb85c;
+  background-color: #5cb85f;
   color: #fff;
   border: none;
-  padding: 10px 15px;
+  padding: 12px 20px;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-form input[type="submit"]:hover {
+form input[type="submit"]:hover, form input[type="submit"]:focus {
   background-color: #4cae4c;
 }
 
@@ -69,9 +77,10 @@ ul.items {
 
 ul.items li {
   background: #fff;
-  margin-bottom: 10px;
-  padding: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
   border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 768px) {
@@ -84,7 +93,7 @@ ul.items li {
   }
   
   nav ul a {
-    padding: 10px;
+    padding: 15px;
     display: block;
   }
 }
