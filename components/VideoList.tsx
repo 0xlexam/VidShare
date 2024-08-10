@@ -21,7 +21,7 @@ const VideoList: React.FC = () => {
     <div>
       <h2>Video List</h2>
       <ul>
-        {videos.map(video => (
+        {videos.map((video) => (
           <li key={video.id}>
             <h3>{video.title}</h3>
             <p>{video.description}</p>
