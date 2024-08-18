@@ -5,6 +5,8 @@ interface VideoDetails {
   title: string;
   description: string;
   url: string;
+  likes: number; // added likes
+  dislikes: number; // added dislikes
 }
 
 interface Comment {
@@ -54,6 +56,21 @@ const VideoInfo: React.FC<VideoInfoProps> = ({ videoId }) => {
     }
   };
 
+  // Function to handle likes and dislikes
+  const handleReaction = async (type: "like" | "dislike") => {
+    // Using PATCH method to update only specific fields
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/videos/${videoId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ [type]: videoDetails ? videoDetails[type] + 1 : 1 }),
+    });
+    if (response.ok) {
+      fetchVideoDetails(); // Refresh the video details to show updated likes or dislikes
+    }
+  };
+
   return (
     <div>
       {videoDetails && (
@@ -61,6 +78,9 @@ const VideoInfo: React.FC<VideoInfoProps> = ({ videoId }) => {
           <h2>{videoDetails.title}</h2>
           <p>{videoDetails.description}</p>
           <video src={videoDetails.url} controls />
+          <div>Likes: {videoDetails.likes} Dislikes: {videoDetails.dislikes}</div>
+          <button onClick={() => handleReaction("like")}>Like</button>
+          <button onClick={() => handleReaction("dislike")}>Dislike</button>
         </div>
       )}
       <h3>Comments</h3>
